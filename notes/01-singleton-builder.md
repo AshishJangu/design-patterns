@@ -216,6 +216,7 @@ So we need a way to allow the parameter class to create the Database object whil
 
 ```java 
 public class Database {
+
     private String host;
     private int port;
     private String username;
@@ -225,10 +226,31 @@ public class Database {
     }
 
     public static class DatabaseBuilder {
+
         private String host;
         private int port;
         private String username;
         private String password;
+
+        public DatabaseBuilder setHost(String host) {
+            this.host = host;
+            return this;
+        }
+
+        public DatabaseBuilder setPort(int port) {
+            this.port = port;
+            return this;
+        }
+
+        public DatabaseBuilder setUsername(String username) {
+            this.username = username;
+            return this;
+        }
+
+        public DatabaseBuilder setPassword(String password) {
+            this.password = password;
+            return this;
+        }
 
         public Database build() {
             Database database = new Database();
@@ -245,12 +267,12 @@ public class Database {
 The above code now allows us to create a Database object using the DatabaseBuilder class. We can fail object creation by adding a validation hook to the build method. The objects created are immutable because the Database class does not have any setters. And the developer can create objects with any permutation of parameters.
 
 ```java
-Database database = new Database.DatabaseBuilder()
-    .host("localhost")
-    .port(3306)
-    .username("root")
-    .password("password")
-    .build();
+Database db = new Database.DatabaseBuilder()
+                    .setHost("localhost")
+                    .setPort(3306)
+                    .setUsername("root")
+                    .setPassword("1234")
+                    .build();
 ```
 
 ### Summary
