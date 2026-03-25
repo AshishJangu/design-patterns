@@ -86,82 +86,101 @@ public class BitcoinPoller {
 
 The two approaches we have discussed so far are not ideal. The first approach violates the Single Responsibility Principle. The second approach is wasteful. The Observer pattern suggests that you define a one-to-many dependency between objects so that when one object changes state, all its dependents are notified and updated automatically.
 
-### Implementation
-1. `Observable interface` - This interface defines the methods that the subject class must implement. The subject class is responsible for notifying the observers when the state of the subject changes.
+import java.util.ArrayList;
+import java.util.List;
 
-```java
-public interface class Observable {
+// Observer Interface
+interface Observer {
+    void update(String weather);
+}
+
+// Subject Interface
+interface Subject {
     void addObserver(Observer observer);
     void removeObserver(Observer observer);
     void notifyObservers();
 }
-```
 
-2. `Observer interface` - This interface defines the methods that the observer class must implement. The observer class is responsible for updating itself when the state of the subject changes.
+// ConcreteSubject Class
+class WeatherStation implements Subject {
+    private List<Observer> observers = new ArrayList<>();
+    private String weather;
 
-```java
-public interface class Observer {
-    void notify();
-}
-```
-
-3. `Concrete observables` - These are the classes that implement the `Observable` interface. The `BitcoinTracker` class is a concrete observable. The `BitcoinTracker` class is responsible for notifying the observers when the state of the subject changes.
-
-```java
-public class BitcoinTracker implements Observable {
-    private Bitcoin bitcoin;
-
-    public void setPrice(double price) {
-        bitcoin.setPrice(price);
-        notifyObservers();
-    }
-}
-```
-
-To simplify the code and provide better interfaces, we can borrow from the registry pattern and register observers and even add utility methods to the `Observable` interface.
-
-```java
-public abstract class Observable {
-    
-    List<Observer> observers = new ArrayList<>();
-
-    public void register(Observer observer) {
+    @Override
+    public void addObserver(Observer observer) {
         observers.add(observer);
     }
 
-    public void deregister(Observer observer) {
+    @Override
+    public void removeObserver(Observer observer) {
         observers.remove(observer);
     }
 
-    public void notifyChange() {
+    @Override
+    public void notifyObservers() {
         for (Observer observer : observers) {
-            observer.notifyChange();
+            observer.update(weather);
         }
     }
-}
-```
 
-4. `Concrete observers` - These are the classes that implement the `Observer` interface. The `EmailSender` class is a concrete observer. The `EmailSender` class is responsible for updating itself when the state of the subject changes.
-
-```java
-public class EmailSender implements Observer {
-    private Bitcoin bitcoin;
-
-    public void notifyChange() {
-        sendEmail();
+    public void setWeather(String newWeather) {
+        this.weather = newWeather;
+        notifyObservers();
     }
 }
-```
 
-5. `Client` - The client is responsible for creating the subject and the observers. The client is also responsible for registering the observers with the subject.
+// ConcreteObserver Class
+class PhoneDisplay implements Observer {
+    private String weather;
 
-```java
-public class Client {
+    @Override
+    public void update(String weather) {
+        this.weather = weather;
+        display();
+    }
+
+    private void display() {
+        System.out.println("Phone Display: Weather updated - " + weather);
+    }
+}
+
+// ConcreteObserver Class
+class TVDisplay implements Observer {
+    private String weather;
+
+    @Override
+    public void update(String weather) {
+        this.weather = weather;
+        display();
+    }
+
+    private void display() {
+        System.out.println("TV Display: Weather updated - " + weather);
+    }
+}
+
+// Usage Class
+public class WeatherApp {
     public static void main(String[] args) {
-        BitcoinTracker bitcoinTracker = new BitcoinTracker();
-        EmailSender emailSender = new EmailSender();
-        
-        bitcoinTracker.register(emailSender);
+        WeatherStation weatherStation = new WeatherStation();
+
+        Observer phoneDisplay = new PhoneDisplay();
+        Observer tvDisplay = new TVDisplay();
+
+        // Register observers
+        weatherStation.addObserver(phoneDisplay);
+        weatherStation.addObserver(tvDisplay);
+
+        // Simulating weather changes
+        weatherStation.setWeather("Sunny");
+        weatherStation.setWeather("Rainy");
+        weatherStation.setWeather("Cloudy");
+
+        // Remove one observer
+        weatherStation.removeObserver(tvDisplay);
+
+        // Notify remaining observer
+        weatherStation.setWeather("Windy");
     }
 }
 ```
